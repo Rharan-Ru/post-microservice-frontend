@@ -7,9 +7,23 @@ import { Grid, Card, CardContent, Typography, TextField, Button } from '@materia
 const App = () => {
   const [posts, setPosts] = React.useState([]);
 
+  React.useEffect(() => {
+    async function getPosts() {
+      try {
+        const response = await axios.get('http://127.0.0.1:8001/api/posts');
+        console.log(response.data);
+        setPosts(response.data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    getPosts();
+  }, []);
+
   const initialFormData = Object.freeze({
     title: '',
     content: '',
+    comment: '',
   });
 
   const [postData, updateFormData] = React.useState(initialFormData);
@@ -29,29 +43,38 @@ const App = () => {
     formData.append('content', postData.content);
 
     axios
-    .post('http://127.0.0.1:8001/api/posts', formData)
-    .then(function (response) {
-      console.log(response.data);
-      setPosts([...posts, response.data]);
-    })
-    .catch(function (error) {
-      console.log(error);
-    });
-    
+      .post('http://127.0.0.1:8001/api/posts', formData)
+      .then(function (response) {
+        console.log(response.data);
+        setPosts([...posts, response.data]);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+
   };
 
-  React.useEffect(() => {
-    async function getPosts() {
-      try {
-        const response = await axios.get('http://127.0.0.1:8001/api/posts');
+  const handleSubmitComment = (e, postId) => {
+    e.preventDefault();
+    let formData = new FormData();
+    formData.append('post_id', postId);
+    formData.append('text', postData.comment);
+
+    axios
+      .post('http://127.0.0.1:8000/api/comment', formData)
+      .then(function (response) {
         console.log(response.data);
-        setPosts(response.data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    getPosts();
-  }, []);
+        setPosts(posts.map(p => {
+          if (p.id === postId) {
+            p.comments.push({ 'text': response.data.text })
+          }
+          return p;
+        }));
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
 
   return (
     <React.Fragment>
@@ -62,11 +85,13 @@ const App = () => {
             <TextField
               id="title" name="title" label="Title" variant="outlined"
               style={{ width: "100%", marginBottom: "10px" }}
-              onChange={handleChange} />
+              onChange={handleChange}
+              value={postData.title} />
             <TextField
               id="content" name="content" variant="outlined" label="Content" multiline rows={4}
               style={{ width: "100%", marginBottom: "10px" }}
-              onChange={handleChange} />
+              onChange={handleChange}
+              value={postData.content} />
             <Button type="submit" fullWidth variant="contained" color="primary">
               Create Post
             </Button>
@@ -74,7 +99,8 @@ const App = () => {
         </Grid>
         {posts.map(post =>
           <Grid item xs={6} key={post.id}>
-            <PostCard post={post} />
+            <PostCard post={post} handleChange={handleChange}
+              comment={postData.comment} onSubmit={handleSubmitComment} />
           </Grid>
         )}
       </Grid>
@@ -83,13 +109,26 @@ const App = () => {
 };
 
 
-const PostCard = ({ post }) => {
+const PostCard = ({ post, handleChange, comment, onSubmit }) => {
   return (
     <React.Fragment>
       <Card height={100}>
         <CardContent>
           <Typography variant="h4">{post.title}</Typography>
           <Typography variant="body2">{post.content}</Typography>
+          <form onSubmit={e => onSubmit(e, post.id)}>
+            <TextField
+              id="comment" name="comment" label="Comment" variant="outlined"
+              style={{ width: "100%", marginBottom: "10px" }}
+              onChange={handleChange}
+              value={comment} />
+            <Button type="submit" variant="contained" color="primary">
+              Send
+            </Button>
+          </form>
+          <div>
+            {post.comments.map((comment, i) => <Typography key={i} variant="body2">{comment.text}</Typography>)}
+          </div>
         </CardContent>
       </Card>
     </React.Fragment>
