@@ -7,6 +7,16 @@ Frontend repository for microservices that get all posts and comments from backe
   Esse é um projeto para simular uma Microservices Software Architecture básica, qual o frontend se conecta com mais duas APIs, a primeira para listar/criar posts e a segunda para criar comentários, cada API tem seu próprio database e um método simples para se comunicarem e sincronizar dados que são consumidas pelo frontend.
 </p>
 
+### Connected Projects
+
+<p>
+  Como esse é um projeto de microservices, ele se conecta com mais dois projetos o quais são:
+</p>
+
+- <a href="https://github.com/Rharan-Ru/post-microservice-backend">Posts Microservice</a> # Posts service backend
+- <a href="https://github.com/Rharan-Ru/comment-microservice-backend">Comments Microservice</a> # Comments service backend
+
+
 ### How Start The Project?
 
 Para iniciar o projeto primeiro devemos instalar os pacotes que serão usados:
