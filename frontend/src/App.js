@@ -25,14 +25,14 @@ const App = () => {
     content: '',
     comment: '',
   });
-
+  
   const [postData, updateFormData] = React.useState(initialFormData);
 
   const handleChange = (e) => {
     console.log(e.target.value);
     updateFormData({
       ...postData,
-      [e.target.name]: e.target.value.trim(),
+      [e.target.name]: e.target.value,
     });
   };
 
@@ -41,7 +41,6 @@ const App = () => {
     let formData = new FormData();
     formData.append('title', postData.title);
     formData.append('content', postData.content);
-
     axios
       .post('http://127.0.0.1:8001/api/posts', formData)
       .then(function (response) {
@@ -100,7 +99,7 @@ const App = () => {
         {posts.map(post =>
           <Grid item xs={6} key={post.id}>
             <PostCard post={post} handleChange={handleChange}
-              comment={postData.comment} onSubmit={handleSubmitComment} />
+              onSubmit={handleSubmitComment} />
           </Grid>
         )}
       </Grid>
@@ -109,28 +108,35 @@ const App = () => {
 };
 
 
-const PostCard = ({ post, handleChange, comment, onSubmit }) => {
+const PostCard = ({ post, handleChange, onSubmit }) => {
   return (
     <React.Fragment>
       <Card height={100}>
         <CardContent>
           <Typography variant="h4">{post.title}</Typography>
           <Typography variant="body2">{post.content}</Typography>
-          <form onSubmit={e => onSubmit(e, post.id)}>
-            <TextField
-              id="comment" name="comment" label="Comment" variant="outlined"
-              style={{ width: "100%", marginBottom: "10px" }}
-              onChange={handleChange}
-              value={comment} />
-            <Button type="submit" variant="contained" color="primary">
-              Send
-            </Button>
-          </form>
-          <div>
-            {post.comments.map((comment, i) => <Typography key={i} variant="body2">{comment.text}</Typography>)}
-          </div>
+          <Comment post={post} handleChange={handleChange} onSubmit={onSubmit} />
         </CardContent>
       </Card>
+    </React.Fragment>
+  );
+};
+
+const Comment = ({ post, handleChange, onSubmit }) => {
+  return (
+    <React.Fragment>
+      <form onSubmit={e => onSubmit(e, post.id)}>
+        <TextField
+          id="comment" name="comment" label="Comment" variant="outlined"
+          style={{ width: "100%", marginBottom: "10px" }}
+          onChange={handleChange} />
+        <Button type="submit" variant="contained" color="primary">
+          Send
+        </Button>
+      </form>
+      <div>
+        {post.comments.map((comment, i) => <Typography key={i} variant="body2">{comment.text}</Typography>)}
+      </div>
     </React.Fragment>
   );
 };
